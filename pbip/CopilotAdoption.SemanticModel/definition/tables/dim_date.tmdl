@@ -1,0 +1,90 @@
+/// Calendario diario: desde 200 días antes de la primera foto hasta la fecha de la última carga. Tabla de fechas del modelo.
+table dim_date
+	lineageTag: eb342d93-3385-4c08-bfa6-96be461c716a
+	dataCategory: Time
+
+	/// Fecha. Clave de la relación con snapshot_date de los hechos.
+	column date
+		dataType: dateTime
+		isKey
+		formatString: dd/mm/yyyy
+		lineageTag: 78aef051-568f-478b-a61f-d6f179f5d57a
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column year
+		dataType: int64
+		formatString: 0
+		lineageTag: 6be328b4-f70f-46e9-8aa8-71a37e61d0b8
+		summarizeBy: none
+		sourceColumn: year
+
+	column month
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 3c9d52ac-dbf2-4fc6-9520-508a5d3de4d8
+		summarizeBy: none
+		sourceColumn: month
+
+	/// Mes y año abreviados ("ene 2026"). Se ordena por year_month.
+	column month_name
+		dataType: string
+		lineageTag: 40693845-4f69-4268-93e7-d1d46a325e63
+		summarizeBy: none
+		sourceColumn: month_name
+		sortByColumn: year_month
+
+	/// Lunes de la semana de la fecha.
+	column week_start
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: ed723317-fe1a-49b0-a31d-dd3c5a3722e3
+		summarizeBy: none
+		sourceColumn: week_start
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// Verdadero si la fecha es de lunes a viernes.
+	column is_weekday
+		dataType: boolean
+		lineageTag: a707c80d-e7cc-4a4d-b0a0-3f1d9ddc121e
+		summarizeBy: none
+		sourceColumn: is_weekday
+
+	/// Año x 100 + mes (202609). Columna de ordenación de month_name.
+	column year_month = dim_date[year] * 100 + dim_date[month]
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 5b342ab1-b2fb-47f9-a3ee-e3756e433fb6
+		summarizeBy: none
+
+	/// Verdadero si existe una foto cargada en esa fecha.
+	column is_snapshot = dim_date[date] IN VALUES ( copilot_usage_user[snapshot_date] )
+		dataType: boolean
+		isHidden
+		lineageTag: 5cb3d588-ef71-4aac-a2ae-1c0e7945a938
+		summarizeBy: none
+
+	/// Etiqueta para el segmentador de fecha de foto: "Última foto" para la más reciente y dd/mm/yyyy para el resto. Se recalcula en cada refresco, así que el segmentador puede quedar fijado en "Última foto".
+	column snapshot_label =
+			VAR _ultima = MAX ( copilot_usage_user[snapshot_date] )
+			RETURN
+			    IF ( dim_date[date] = _ultima, "Última foto", FORMAT ( dim_date[date], "dd/mm/yyyy" ) )
+		dataType: string
+		lineageTag: e09666b5-3ed7-46f5-abc2-b9615bbbde7a
+		summarizeBy: none
+		sortByColumn: date
+
+	partition dim_date = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database(SqlEndpoint, Lakehouse),
+				    Datos = Origen{[Schema = "dbo", Item = "dim_date"]}[Data]
+				in
+				    Datos
+

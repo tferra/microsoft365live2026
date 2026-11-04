@@ -1,0 +1,100 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/3.3.0/schema.json",
+  "themeCollection": {
+    "baseTheme": {
+      "name": "Fluent2-CY26SU09",
+      "reportVersionAtImport": {
+        "visual": "2.13.0",
+        "report": "3.4.0",
+        "page": "2.3.1"
+      },
+      "type": "SharedResources"
+    },
+    "customTheme": {
+      "name": "TemaCopilotAdopcion-a718f63a.json",
+      "reportVersionAtImport": {
+        "visual": "2.13.0",
+        "report": "3.4.0",
+        "page": "2.3.1"
+      },
+      "type": "RegisteredResources"
+    }
+  },
+  "objects": {
+    "section": [
+      {
+        "properties": {
+          "verticalAlignment": {
+            "expr": {
+              "Literal": {
+                "Value": "'Top'"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "resourcePackages": [
+    {
+      "name": "SharedResources",
+      "type": "SharedResources",
+      "items": [
+        {
+          "name": "Fluent2-CY26SU09",
+          "path": "BaseThemes/Fluent2-CY26SU09.json",
+          "type": "BaseTheme"
+        }
+      ]
+    },
+    {
+      "name": "RegisteredResources",
+      "type": "RegisteredResources",
+      "items": [
+        {
+          "name": "TemaCopilotAdopcion-a718f63a.json",
+          "path": "TemaCopilotAdopcion-a718f63a.json",
+          "type": "CustomTheme"
+        },
+        {
+          "name": "icono-resumen.png",
+          "path": "icono-resumen.png",
+          "type": "Image"
+        },
+        {
+          "name": "icono-evolucion.png",
+          "path": "icono-evolucion.png",
+          "type": "Image"
+        },
+        {
+          "name": "icono-apps.png",
+          "path": "icono-apps.png",
+          "type": "Image"
+        },
+        {
+          "name": "icono-usuarios.png",
+          "path": "icono-usuarios.png",
+          "type": "Image"
+        },
+        {
+          "name": "icono-analisis.png",
+          "path": "icono-analisis.png",
+          "type": "Image"
+        },
+        {
+          "name": "icono-filtros.png",
+          "path": "icono-filtros.png",
+          "type": "Image"
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "useStylableVisualContainerHeader": true,
+    "exportDataMode": "AllowSummarized",
+    "defaultDrillFilterOtherVisuals": true,
+    "allowChangeFilterTypes": true,
+    "useEnhancedTooltips": true,
+    "useDefaultAggregateDisplayName": true
+  }
+}

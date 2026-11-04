@@ -1,0 +1,32 @@
+/// Parámetro what-if: objetivo de % Adopción para la línea de referencia (0 % a 100 % en pasos de 5 %, 60 % por defecto).
+table 'Objetivo adopción'
+	lineageTag: d12c50b7-7935-4bf0-8aa2-72a1d1b0efd1
+
+	/// Objetivo de % Adopción seleccionado (60 % si no hay selección).
+	measure 'Objetivo adopción Valor' = SELECTEDVALUE ( 'Objetivo adopción'[Objetivo adopción], 0.6 )
+		formatString: 0%
+		displayFolder: Adopción
+		lineageTag: 29620416-13cb-44de-8713-2fa5380a5560
+
+	/// Objetivo de % Adopción solo en las fechas con foto, para dibujar la línea de objetivo en los gráficos por fecha.
+	measure 'Objetivo adopción línea' = IF ( NOT ISBLANK ( [Fecha foto] ), [Objetivo adopción Valor] )
+		formatString: 0%
+		displayFolder: Adopción
+		lineageTag: 35b12d60-89ba-421f-8f38-c6e527edf108
+
+	column 'Objetivo adopción'
+		dataType: decimal
+		formatString: 0%
+		lineageTag: e523aa63-f7af-4095-907e-a0e5776e8dc4
+		summarizeBy: none
+		sourceColumn: [Value]
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 0
+				}
+
+	partition 'Objetivo adopción' = calculated
+		mode: import
+		source = GENERATESERIES ( 0, 1, 0.05 )
+

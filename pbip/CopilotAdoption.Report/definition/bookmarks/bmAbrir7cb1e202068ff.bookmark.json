@@ -1,0 +1,83 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/bookmark/2.1.0/schema.json",
+  "displayName": "Filtros abiertos · Ficha de usuario",
+  "name": "bmAbrir7cb1e202068ff",
+  "options": {
+    "targetVisualNames": [
+      "44faa5fba191667b70ae",
+      "5d5d26c1637b51608b5e",
+      "66a9d9b1218563aa35de",
+      "7b12a9da7bb6a4d37207",
+      "8f28b4c3425185029ea4",
+      "9bb56acb4a1070642fae",
+      "a6155fc88853ed56e616",
+      "bdb91e8aeb330b80cd2d",
+      "cf5d0717a787f3cd5d31"
+    ],
+    "suppressData": true
+  },
+  "explorationState": {
+    "version": "1.0",
+    "activeSection": "7cb1e202068ff2fd93d8",
+    "sections": {
+      "7cb1e202068ff2fd93d8": {
+        "visualContainers": {
+          "44faa5fba191667b70ae": {
+            "singleVisual": {
+              "visualType": "shape",
+              "objects": {}
+            }
+          },
+          "5d5d26c1637b51608b5e": {
+            "singleVisual": {
+              "visualType": "textbox",
+              "objects": {}
+            }
+          },
+          "66a9d9b1218563aa35de": {
+            "singleVisual": {
+              "visualType": "actionButton",
+              "objects": {}
+            }
+          },
+          "7b12a9da7bb6a4d37207": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "objects": {}
+            }
+          },
+          "8f28b4c3425185029ea4": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "objects": {}
+            }
+          },
+          "9bb56acb4a1070642fae": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "objects": {}
+            }
+          },
+          "a6155fc88853ed56e616": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "objects": {}
+            }
+          },
+          "bdb91e8aeb330b80cd2d": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "objects": {}
+            }
+          },
+          "cf5d0717a787f3cd5d31": {
+            "singleVisual": {
+              "visualType": "advancedSlicerVisual",
+              "objects": {}
+            }
+          }
+        }
+      }
+    }
+  }
+}

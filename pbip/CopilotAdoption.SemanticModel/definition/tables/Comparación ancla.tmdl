@@ -1,0 +1,17 @@
+/// Tabla técnica oculta. El grupo de cálculo Comparación temporal la filtra para no aplicar el desplazamiento de 28 días dos veces a las medidas anidadas.
+table 'Comparación ancla'
+	isHidden
+	lineageTag: 2dc56e3d-0a55-4289-b953-972ef0ee1e1a
+
+	column Ancla
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b426dd4b-525e-4312-8e18-403200222f16
+		summarizeBy: none
+		sourceColumn: [Ancla]
+
+	partition 'Comparación ancla' = calculated
+		mode: import
+		source = ROW ( "Ancla", 1 )
+

@@ -1,0 +1,30 @@
+/// Dimensión de aplicaciones de Microsoft 365 con Copilot (Teams, Outlook, Word, Excel, PowerPoint, Copilot Chat, OneNote, Loop y las que añada Microsoft).
+table dim_app
+	lineageTag: 3f1c2a10-5b7e-4c1d-9a2e-0c1b2d3e4f07
+
+	/// Aplicación de Microsoft 365. Se ordena por la columna orden.
+	column app
+		dataType: string
+		lineageTag: 3f1c2a10-5b7e-4c1d-9a2e-0c1b2d3e4f08
+		summarizeBy: none
+		sourceColumn: app
+		sortByColumn: orden
+
+	/// Orden de visualización (Teams=1 ... Loop=8, apps nuevas=99).
+	column orden
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e6ea8577-6164-4cb5-8b41-d9235e56964b
+		summarizeBy: none
+		sourceColumn: orden
+
+	partition dim_app = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database(SqlEndpoint, Lakehouse),
+				    Datos = Origen{[Schema = "dbo", Item = "dim_app"]}[Data]
+				in
+				    Datos
+

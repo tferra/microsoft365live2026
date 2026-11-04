@@ -1,0 +1,20 @@
+relationship 'copilot_usage_user snapshot_date a dim_date'
+	fromColumn: copilot_usage_user.snapshot_date
+	toColumn: dim_date.date
+
+relationship 'copilot_usage_user_app snapshot_date a dim_date'
+	fromColumn: copilot_usage_user_app.snapshot_date
+	toColumn: dim_date.date
+
+relationship 'copilot_usage_user upn a dim_users'
+	fromColumn: copilot_usage_user.upn
+	toColumn: dim_users.upn
+
+relationship 'copilot_usage_user_app upn a dim_users'
+	fromColumn: copilot_usage_user_app.upn
+	toColumn: dim_users.upn
+
+relationship 'copilot_usage_user_app app a dim_app'
+	fromColumn: copilot_usage_user_app.app
+	toColumn: dim_app.app
+

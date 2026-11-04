@@ -1,0 +1,377 @@
+cultureInfo es-ES
+
+	linguisticMetadata =
+			{
+			  "Version": "2.0.0",
+			  "Language": "en-US",
+			  "Entities": {
+			    "dim_date.date": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_date",
+			          "ConceptualProperty": "date"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Fecha de la foto": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_date.week_start": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_date",
+			          "ConceptualProperty": "week_start"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Semana": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_date.month_name": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_date",
+			          "ConceptualProperty": "month_name"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Mes": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "objetivo_adopción.objetivo_adopción_valor": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Objetivo adopción",
+			          "ConceptualProperty": "Objetivo adopción Valor"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "dim_users.department": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_users",
+			          "ConceptualProperty": "department"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Departamento": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_users.country": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_users",
+			          "ConceptualProperty": "country"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "País": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_users.job_title": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_users",
+			          "ConceptualProperty": "job_title"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Puesto": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_users.user_code": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_users",
+			          "ConceptualProperty": "user_code"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Código": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "copilot_usage_user.segment": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "copilot_usage_user",
+			          "ConceptualProperty": "segment"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Segmento": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "copilot_usage_user.nombre_mostrado": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "copilot_usage_user",
+			          "ConceptualProperty": "Nombre mostrado"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Usuario": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "copilot_usage_user.segmento_con_icono": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "copilot_usage_user",
+			          "ConceptualProperty": "Segmento con icono"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Segmento": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "copilot_usage_user.usuarios_embudo": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "copilot_usage_user",
+			          "ConceptualProperty": "Usuarios embudo"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Usuarios": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "copilot_usage_user.es_activo_28d": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "copilot_usage_user",
+			          "ConceptualProperty": "Es activo 28d"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Activo 28d (1 = sí)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_app.app": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_app",
+			          "ConceptualProperty": "app"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "App": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "copilot_usage_user_app.apps_activas_por_usuario": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "copilot_usage_user_app",
+			          "ConceptualProperty": "Apps activas por usuario"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Apps activas": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "copilot_usage_user_app.icono_actividad_app": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "copilot_usage_user_app",
+			          "ConceptualProperty": "Icono actividad app"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Estado": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "copilot_usage_user_app.última_actividad_app": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "copilot_usage_user_app",
+			          "ConceptualProperty": "Última actividad app"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Última actividad": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "objetivo_adopción.objetivo_adopción_línea": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Objetivo adopción",
+			          "ConceptualProperty": "Objetivo adopción línea"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Objetivo": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    }
+			  }
+			}
+		contentType: json
+

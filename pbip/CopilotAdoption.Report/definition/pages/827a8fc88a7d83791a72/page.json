@@ -1,0 +1,80 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "827a8fc88a7d83791a72",
+  "displayName": "Evolución",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "objects": {
+    "background": [
+      {
+        "properties": {
+          "color": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'#F4F7FC'"
+                  }
+                }
+              }
+            }
+          },
+          "transparency": {
+            "expr": {
+              "Literal": {
+                "Value": "0D"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "outspace": [
+      {
+        "properties": {
+          "color": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'#F4F7FC'"
+                  }
+                }
+              }
+            }
+          },
+          "transparency": {
+            "expr": {
+              "Literal": {
+                "Value": "0D"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "visualInteractions": [
+    {
+      "source": "0a7eed001e6f1ae30444",
+      "target": "66dc50040c889521fa99",
+      "type": "NoFilter"
+    },
+    {
+      "source": "0a7eed001e6f1ae30444",
+      "target": "7609cbcc48db94519058",
+      "type": "NoFilter"
+    },
+    {
+      "source": "0a7eed001e6f1ae30444",
+      "target": "86a870a3c9276c36c258",
+      "type": "NoFilter"
+    },
+    {
+      "source": "0a7eed001e6f1ae30444",
+      "target": "b1e82548b51cbda180ae",
+      "type": "NoFilter"
+    }
+  ]
+}

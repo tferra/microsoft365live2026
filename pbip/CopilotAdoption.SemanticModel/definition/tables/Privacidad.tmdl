@@ -1,0 +1,23 @@
+/// Tabla desconectada para el conmutador de privacidad. Con "Ocultar nombres" (o sin selección) la medida Nombre mostrado devuelve un código anónimo.
+table Privacidad
+	lineageTag: f40ac88f-aed7-45c8-846a-86919c39176a
+
+	column Modo
+		dataType: string
+		lineageTag: 1eb14cc8-d004-4f7e-b9db-65a67ddbadfd
+		summarizeBy: none
+		sourceColumn: [Modo]
+		sortByColumn: Orden
+
+	column Orden
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: debf19a4-6902-4585-9c7a-f4520b4b1dd4
+		summarizeBy: none
+		sourceColumn: [Orden]
+
+	partition Privacidad = calculated
+		mode: import
+		source = DATATABLE ( "Modo", STRING, "Orden", INTEGER, { { "Ocultar nombres", 1 }, { "Mostrar nombres", 2 } } )
+

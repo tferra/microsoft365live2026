@@ -1,0 +1,23 @@
+/// Tabla desconectada con las etapas del embudo de adopción: Licencias > Han usado alguna vez > Activos 28d > Activos 7d. Se usa con la medida Usuarios embudo.
+table 'Etapas embudo'
+	lineageTag: 3eae4c4c-5984-467a-8469-0ad295b40628
+
+	column Etapa
+		dataType: string
+		lineageTag: c91951da-86bb-45e8-a208-fdde74a11a0a
+		summarizeBy: none
+		sourceColumn: [Etapa]
+		sortByColumn: Orden
+
+	column Orden
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 1b0ee195-fb95-43bc-b455-9251ae0d4330
+		summarizeBy: none
+		sourceColumn: [Orden]
+
+	partition 'Etapas embudo' = calculated
+		mode: import
+		source = DATATABLE ( "Etapa", STRING, "Orden", INTEGER, { { "Licencias", 1 }, { "Han usado alguna vez", 2 }, { "Activos 28d", 3 }, { "Activos 7d", 4 } } )
+

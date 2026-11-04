@@ -1,0 +1,45 @@
+/// Parámetro de campo para elegir la medida de la página Análisis libre: % Adopción, Activos 28d, Licencias sin uso 28d o Coste por usuario activo.
+table 'Medida de análisis'
+	lineageTag: 9a5bc018-47d0-4944-bc1c-9268f8456410
+
+	column 'Medida de análisis'
+		dataType: string
+		lineageTag: eafacc34-7c31-4e61-a24c-7891b82f2d35
+		summarizeBy: none
+		sourceColumn: [Value1]
+		sortByColumn: 'Medida de análisis Orden'
+
+		relatedColumnDetails
+			groupByColumn: 'Medida de análisis Campos'
+
+	column 'Medida de análisis Campos'
+		dataType: string
+		isHidden
+		lineageTag: 1585a146-4e20-48e0-9151-4643cde56ad6
+		summarizeBy: none
+		sourceColumn: [Value2]
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 3,
+				  "kind": 2
+				}
+
+	column 'Medida de análisis Orden'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 295dfd78-f50c-42ea-b23a-59d6b4724237
+		summarizeBy: none
+		sourceColumn: [Value3]
+
+	partition 'Medida de análisis' = calculated
+		mode: import
+		source =
+				{
+				    ( "% Adopción", NAMEOF ( [% Adopción] ), 0 ),
+				    ( "Activos 28d", NAMEOF ( [Activos 28d] ), 1 ),
+				    ( "Licencias sin uso 28d", NAMEOF ( [Licencias sin uso 28d] ), 2 ),
+				    ( "Coste por usuario activo", NAMEOF ( [Coste por usuario activo] ), 3 )
+				}
+

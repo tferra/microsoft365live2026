@@ -1,0 +1,12 @@
+/// Servidor del endpoint SQL del Lakehouse LH_Copilot
+expression SqlEndpoint = "<tu-endpoint-sql>.datawarehouse.fabric.microsoft.com" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: c0958c42-beb9-440c-bd9c-903c68791328
+
+	annotation PBI_ResultType = Text
+
+/// Base de datos (nombre del Lakehouse) en el endpoint SQL
+expression Lakehouse = "LH_Copilot" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: f7d23561-15ef-47b7-853d-05e0b139d5a0
+
+	annotation PBI_ResultType = Text
+

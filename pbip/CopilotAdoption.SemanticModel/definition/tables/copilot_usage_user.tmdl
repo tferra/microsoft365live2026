@@ -1,0 +1,645 @@
+/// Hechos: una fila por usuario con licencia de Copilot y foto diaria (snapshot_date). Origen: informe getMicrosoft365CopilotUsageUserDetail de Graph guardado por el notebook nb_ingesta_copilot_usage.
+table copilot_usage_user
+	lineageTag: 3f1c2a10-5b7e-4c1d-9a2e-0c1b2d3e4f01
+
+	/// Fecha de la última foto visible en el contexto. Todas las medidas se evalúan en esta foto: en una tarjeta, la más reciente seleccionada; en un gráfico por fecha, la de cada día.
+	measure 'Fecha foto' = CALCULATE ( MAX ( copilot_usage_user[snapshot_date] ) )
+		formatString: dd/mm/yyyy
+		displayFolder: Base
+		lineageTag: 6b826f05-9c94-4592-8024-57349377748d
+
+	/// Fecha de refresco del informe de Graph correspondiente a la foto (2-3 días antes de la foto). La ventana de actividad se cuenta hacia atrás desde esta fecha.
+	measure 'Fecha refresco informe' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    CALCULATE ( MAX ( copilot_usage_user[report_refresh_date] ), copilot_usage_user[snapshot_date] = _f )
+		formatString: dd/mm/yyyy
+		displayFolder: Base
+		lineageTag: bcc6cd46-6bf4-45e2-a057-25645a7acc1e
+
+	/// Licencias de Microsoft 365 Copilot asignadas (usuarios distintos) en la foto evaluada.
+	measure Licencias =
+			VAR _f = [Fecha foto]
+			RETURN CALCULATE ( DISTINCTCOUNT ( copilot_usage_user[upn] ), copilot_usage_user[snapshot_date] = _f )
+		formatString: #,##0
+		displayFolder: Base
+		lineageTag: 3f1c2a10-5b7e-4c1d-9a2e-0c1b2d3e4f02
+
+	/// Usuarios activos: han usado Copilot en cualquier app en los 28 días anteriores a la fecha de refresco del informe de la foto evaluada.
+	measure 'Activos 28d' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    CALCULATE (
+			        COUNTROWS (
+			            FILTER (
+			                copilot_usage_user,
+			                NOT ISBLANK ( copilot_usage_user[last_activity_date] )
+			                    && DATEDIFF ( copilot_usage_user[last_activity_date], copilot_usage_user[report_refresh_date], DAY ) < 28
+			            )
+			        ),
+			        copilot_usage_user[snapshot_date] = _f
+			    )
+		formatString: #,##0
+		displayFolder: Base
+		lineageTag: 3f1c2a10-5b7e-4c1d-9a2e-0c1b2d3e4f09
+
+	/// Usuarios que han usado Copilot en los 7 días anteriores a la fecha de refresco del informe de la foto evaluada.
+	measure 'Activos 7d' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    CALCULATE (
+			        COUNTROWS (
+			            FILTER (
+			                copilot_usage_user,
+			                NOT ISBLANK ( copilot_usage_user[last_activity_date] )
+			                    && DATEDIFF ( copilot_usage_user[last_activity_date], copilot_usage_user[report_refresh_date], DAY ) < 7
+			            )
+			        ),
+			        copilot_usage_user[snapshot_date] = _f
+			    )
+		formatString: #,##0
+		displayFolder: Base
+		lineageTag: 1282d4d5-edea-4ac2-8ac7-68ed94a3cd77
+
+	/// Usuarios activos con una ventana configurable (parámetro Ventana actividad (días): 7, 14, 28 o 60; 28 por defecto).
+	measure 'Activos ventana' =
+			VAR _f = [Fecha foto]
+			VAR _ventana = [Ventana actividad (días) Valor]
+			RETURN
+			    CALCULATE (
+			        COUNTROWS (
+			            FILTER (
+			                copilot_usage_user,
+			                NOT ISBLANK ( copilot_usage_user[last_activity_date] )
+			                    && DATEDIFF ( copilot_usage_user[last_activity_date], copilot_usage_user[report_refresh_date], DAY ) < _ventana
+			            )
+			        ),
+			        copilot_usage_user[snapshot_date] = _f
+			    )
+		formatString: #,##0
+		displayFolder: Base
+		lineageTag: 7e900ffc-0d4b-4c07-ab4a-63923aa4cc6c
+
+	/// Licencias que nunca han registrado actividad con Copilot (última actividad vacía) en la foto evaluada.
+	measure 'Nunca usado' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    IF (
+			        NOT ISBLANK ( _f ),
+			        CALCULATE (
+			            COUNTROWS ( copilot_usage_user ),
+			            copilot_usage_user[snapshot_date] = _f,
+			            copilot_usage_user[segment] = "Nunca usado"
+			        ) + 0
+			    )
+		formatString: #,##0
+		displayFolder: Base
+		lineageTag: 650bed7c-e281-44ff-9a43-8c927d184183
+
+	/// Licencias que han usado Copilot al menos una vez (Licencias - Nunca usado). Segunda etapa del embudo.
+	measure 'Han usado alguna vez' = [Licencias] - [Nunca usado]
+		formatString: #,##0
+		displayFolder: Base
+		lineageTag: 19b80aa8-9c21-427a-a08c-7c5d65bc67b9
+
+	/// Licencias asignadas sin actividad en los últimos 28 días (incluye las que nunca se han usado). Son las candidatas a reasignar. Sinónimos: licencias dormidas, licencias sin usar.
+	measure 'Licencias sin uso 28d' = [Licencias] - [Activos 28d]
+		formatString: #,##0
+		displayFolder: Base
+		lineageTag: 3f1c2a10-5b7e-4c1d-9a2e-0c1b2d3e4f03
+
+	/// Porcentaje de adopción: Activos 28d / Licencias en la foto evaluada. Es la métrica principal de adopción.
+	measure '% Adopción' = DIVIDE ( [Activos 28d], [Licencias] )
+		formatString: 0.0%
+		displayFolder: Adopción
+		lineageTag: 3f1c2a10-5b7e-4c1d-9a2e-0c1b2d3e4f04
+
+	/// Posición del departamento por % Adopción entre los departamentos con licencias visibles (1 = mayor adopción).
+	measure 'Ranking departamento por % Adopción' =
+			VAR _departamentos =
+			    FILTER ( ALLSELECTED ( dim_users[department] ), [Licencias] > 0 )
+			RETURN
+			    IF (
+			        HASONEVALUE ( dim_users[department] ) && [Licencias] > 0,
+			        RANKX ( _departamentos, [% Adopción], , DESC, DENSE )
+			    )
+		formatString: 0
+		displayFolder: Adopción
+		lineageTag: 9c3b1456-53e1-4411-88fe-063f26f112e4
+
+	/// Departamento con mayor % Adopción entre los visibles (excluye "Sin departamento"). En empate gana el que tiene más licencias.
+	measure 'Departamento con más adopción' =
+			VAR _tabla =
+			    FILTER (
+			        ADDCOLUMNS (
+			            FILTER ( ALLSELECTED ( dim_users[department] ), dim_users[department] <> "Sin departamento" ),
+			            "@pct", [% Adopción],
+			            "@lic", [Licencias]
+			        ),
+			        [@lic] > 0
+			    )
+			VAR _top = TOPN ( 1, _tabla, [@pct], DESC, [@lic], DESC, dim_users[department], ASC )
+			RETURN
+			    MAXX ( _top, dim_users[department] )
+		displayFolder: Adopción
+		lineageTag: 22edca30-3011-49ec-ad96-3ba292419df5
+
+	/// Departamento con menor % Adopción entre los visibles (excluye "Sin departamento"). En empate gana el que tiene más licencias.
+	measure 'Departamento con menos adopción' =
+			VAR _tabla =
+			    FILTER (
+			        ADDCOLUMNS (
+			            FILTER ( ALLSELECTED ( dim_users[department] ), dim_users[department] <> "Sin departamento" ),
+			            "@pct", [% Adopción],
+			            "@lic", [Licencias]
+			        ),
+			        [@lic] > 0
+			    )
+			VAR _top = TOPN ( 1, _tabla, [@pct], ASC, [@lic], DESC, dim_users[department], ASC )
+			RETURN
+			    MAXX ( _top, dim_users[department] )
+		displayFolder: Adopción
+		lineageTag: 8bb2fe67-8e61-49ce-824f-6227060be0ec
+
+	/// % Adopción de la foto de hace 28 días (Fecha foto - 28). En blanco si no existe esa foto.
+	measure '% Adopción hace 4 semanas' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    CALCULATE ( [% Adopción], REMOVEFILTERS ( dim_date ), dim_date[date] = _f - 28 )
+		formatString: 0.0%
+		displayFolder: Evolución
+		lineageTag: d0a6037e-a4fe-429d-bd10-da0832825806
+
+	/// Diferencia en puntos porcentuales entre el % Adopción actual y el de hace 4 semanas. En blanco si no hay foto de hace 4 semanas.
+	measure 'Variación adopción (puntos)' =
+			VAR _anterior = [% Adopción hace 4 semanas]
+			RETURN
+			    IF ( NOT ISBLANK ( _anterior ), ( [% Adopción] - _anterior ) * 100 )
+		formatString: +0.0 "pp";-0.0 "pp";0.0 "pp"
+		displayFolder: Evolución
+		lineageTag: 4442f01b-5e86-4517-95c6-64531fb15c5d
+
+	/// Activos 28d en la foto de hace 28 días. En blanco si no existe esa foto.
+	measure 'Activos hace 4 semanas' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    CALCULATE ( [Activos 28d], REMOVEFILTERS ( dim_date ), dim_date[date] = _f - 28 )
+		formatString: #,##0
+		displayFolder: Evolución
+		lineageTag: 4bad3a06-6eb1-42cf-8696-5764f04f109d
+
+	/// Usuarios activos (28d) en la foto actual que no lo eran en la foto de hace 28 días. En blanco si no existe la foto anterior.
+	measure 'Nuevos activos' =
+			VAR _f = [Fecha foto]
+			VAR _hayAnterior =
+			    CALCULATE ( COUNTROWS ( copilot_usage_user ), REMOVEFILTERS ( dim_date ), copilot_usage_user[snapshot_date] = _f - 28 ) > 0
+			VAR _actuales =
+			    CALCULATETABLE ( VALUES ( copilot_usage_user[upn] ), copilot_usage_user[snapshot_date] = _f, copilot_usage_user[is_active_28d] = 1 )
+			VAR _anteriores =
+			    CALCULATETABLE ( VALUES ( copilot_usage_user[upn] ), REMOVEFILTERS ( dim_date ), copilot_usage_user[snapshot_date] = _f - 28, copilot_usage_user[is_active_28d] = 1 )
+			RETURN
+			    IF ( _hayAnterior, COUNTROWS ( EXCEPT ( _actuales, _anteriores ) ) + 0 )
+		formatString: #,##0
+		displayFolder: Evolución
+		lineageTag: f99d436b-bd65-43a3-bc91-f03943aca383
+
+	/// Usuarios activos (28d) en la foto de hace 28 días que ya no lo son en la foto actual. En blanco si no existe la foto anterior.
+	measure 'Activos perdidos' =
+			VAR _f = [Fecha foto]
+			VAR _hayAnterior =
+			    CALCULATE ( COUNTROWS ( copilot_usage_user ), REMOVEFILTERS ( dim_date ), copilot_usage_user[snapshot_date] = _f - 28 ) > 0
+			VAR _actuales =
+			    CALCULATETABLE ( VALUES ( copilot_usage_user[upn] ), copilot_usage_user[snapshot_date] = _f, copilot_usage_user[is_active_28d] = 1 )
+			VAR _anteriores =
+			    CALCULATETABLE ( VALUES ( copilot_usage_user[upn] ), REMOVEFILTERS ( dim_date ), copilot_usage_user[snapshot_date] = _f - 28, copilot_usage_user[is_active_28d] = 1 )
+			RETURN
+			    IF ( _hayAnterior, COUNTROWS ( EXCEPT ( _anteriores, _actuales ) ) + 0 )
+		formatString: #,##0
+		displayFolder: Evolución
+		lineageTag: 8cbab5ae-97b8-4ddc-bdd9-3447c2057a27
+
+	/// Retención a 28 días: de los activos de hace 4 semanas, porcentaje que sigue activo en la foto actual.
+	measure 'Retención 28d' =
+			VAR _f = [Fecha foto]
+			VAR _actuales =
+			    CALCULATETABLE ( VALUES ( copilot_usage_user[upn] ), copilot_usage_user[snapshot_date] = _f, copilot_usage_user[is_active_28d] = 1 )
+			VAR _anteriores =
+			    CALCULATETABLE ( VALUES ( copilot_usage_user[upn] ), REMOVEFILTERS ( dim_date ), copilot_usage_user[snapshot_date] = _f - 28, copilot_usage_user[is_active_28d] = 1 )
+			RETURN
+			    DIVIDE ( COUNTROWS ( INTERSECT ( _anteriores, _actuales ) ), COUNTROWS ( _anteriores ) )
+		formatString: 0.0%
+		displayFolder: Evolución
+		lineageTag: 56c781bd-4360-45c4-8427-c2380005a4f0
+
+	/// Valor máximo de % Adopción alcanzado en cualquier foto hasta la foto evaluada.
+	measure 'Máximo histórico % Adopción' =
+			VAR _f = [Fecha foto]
+			VAR _fotos =
+			    CALCULATETABLE ( VALUES ( copilot_usage_user[snapshot_date] ), REMOVEFILTERS ( dim_date ), copilot_usage_user[snapshot_date] <= _f )
+			RETURN
+			    MAXX (
+			        _fotos,
+			        VAR _d = copilot_usage_user[snapshot_date]
+			        RETURN CALCULATE ( [% Adopción], REMOVEFILTERS ( dim_date ), dim_date[date] = _d )
+			    )
+		formatString: 0.0%
+		displayFolder: Evolución
+		lineageTag: a6f49103-890a-4bf9-973b-c91611634f85
+
+	/// Días entre la última actividad con Copilot y la fecha de refresco del informe. Para un usuario es su valor; para un grupo, la media de los usuarios con alguna actividad. En blanco si nunca lo ha usado.
+	measure 'Días sin actividad' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    CALCULATE ( AVERAGE ( copilot_usage_user[days_inactive] ), copilot_usage_user[snapshot_date] = _f )
+		formatString: #,##0
+		displayFolder: Usuarios
+		lineageTag: 75d15171-c029-4a49-8625-b1869d77b347
+
+	/// Última fecha de actividad con Copilot (cualquier app) en la foto evaluada.
+	measure 'Última actividad' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    CALCULATE ( MAX ( copilot_usage_user[last_activity_date] ), copilot_usage_user[snapshot_date] = _f )
+		formatString: dd/mm/yyyy
+		displayFolder: Usuarios
+		lineageTag: 0bec9966-23ba-463d-9e00-4456de02f356
+
+	/// 1 si el usuario está activo (28d) en la foto evaluada y 0 si no. Pensada para un único usuario (ficha de usuario).
+	measure 'Es activo 28d' =
+			VAR _licencias = [Licencias]
+			RETURN
+			    IF ( _licencias > 0, IF ( [Activos 28d] > 0, 1, 0 ) )
+		formatString: 0
+		displayFolder: Usuarios
+		lineageTag: d572b3f7-9a7a-4be0-8718-f36a3855c323
+
+	/// Segmento del usuario en la foto evaluada según los días sin actividad: Activo semanal (<7), Activo mensual (7-27), En riesgo (28-59), Dormido (60 o más) o Nunca usado.
+	measure Segmento =
+			VAR _f = [Fecha foto]
+			RETURN
+			    CALCULATE ( SELECTEDVALUE ( copilot_usage_user[segment] ), copilot_usage_user[snapshot_date] = _f )
+		displayFolder: Usuarios
+		lineageTag: 632e7783-e468-48e2-8b71-76f3629a83a9
+
+	/// Usuarios con actividad en los últimos 7 días (segmento Activo semanal).
+	measure 'Usuarios activos semanales' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    IF (
+			        NOT ISBLANK ( _f ),
+			        CALCULATE ( COUNTROWS ( copilot_usage_user ), copilot_usage_user[snapshot_date] = _f, copilot_usage_user[segment] = "Activo semanal" ) + 0
+			    )
+		formatString: #,##0
+		displayFolder: Usuarios
+		lineageTag: 64493747-1289-4262-b6a7-aeab59c9febc
+
+	/// Usuarios con última actividad hace entre 7 y 27 días (segmento Activo mensual).
+	measure 'Usuarios activos mensuales' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    IF (
+			        NOT ISBLANK ( _f ),
+			        CALCULATE ( COUNTROWS ( copilot_usage_user ), copilot_usage_user[snapshot_date] = _f, copilot_usage_user[segment] = "Activo mensual" ) + 0
+			    )
+		formatString: #,##0
+		displayFolder: Usuarios
+		lineageTag: f920fb4c-4bcc-4a05-a69b-eadc40635e60
+
+	/// Usuarios con última actividad hace entre 28 y 59 días (segmento En riesgo).
+	measure 'Usuarios en riesgo' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    IF (
+			        NOT ISBLANK ( _f ),
+			        CALCULATE ( COUNTROWS ( copilot_usage_user ), copilot_usage_user[snapshot_date] = _f, copilot_usage_user[segment] = "En riesgo" ) + 0
+			    )
+		formatString: #,##0
+		displayFolder: Usuarios
+		lineageTag: fc82b199-1f83-46f0-94f1-50072ae5f33e
+
+	/// Usuarios con última actividad hace 60 días o más (segmento Dormido).
+	measure 'Usuarios dormidos' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    IF (
+			        NOT ISBLANK ( _f ),
+			        CALCULATE ( COUNTROWS ( copilot_usage_user ), copilot_usage_user[snapshot_date] = _f, copilot_usage_user[segment] = "Dormido" ) + 0
+			    )
+		formatString: #,##0
+		displayFolder: Usuarios
+		lineageTag: a6c6c4aa-0f5f-42e2-9cf3-50fc5fea762d
+
+	/// Valor de cada etapa del embudo (tabla Etapas embudo): Licencias > Han usado alguna vez > Activos 28d > Activos 7d.
+	measure 'Usuarios embudo' =
+			SWITCH (
+			    SELECTEDVALUE ( 'Etapas embudo'[Orden] ),
+			    1, [Licencias],
+			    2, [Han usado alguna vez],
+			    3, [Activos 28d],
+			    4, [Activos 7d]
+			)
+		formatString: #,##0
+		displayFolder: Usuarios
+		lineageTag: bdb4b484-ce0b-4873-bbd0-022025cad1b5
+
+	/// Coste mensual de las licencias: Licencias x Precio licencia (parámetro, €/usuario/mes). Es un supuesto, no un dato de facturación.
+	measure 'Coste mensual licencias' = [Licencias] * [Precio licencia Valor]
+		formatString: #,##0 "€"
+		displayFolder: Coste
+		lineageTag: 85817e80-0538-42cc-9cf8-e9e1b3ae8bb2
+
+	/// Coste mensual de las licencias dividido entre los Activos 28d. Supuesto basado en el parámetro Precio licencia.
+	measure 'Coste por usuario activo' = DIVIDE ( [Coste mensual licencias], [Activos 28d] )
+		formatString: #,##0.00 "€"
+		displayFolder: Coste
+		lineageTag: ef48f4d1-ee23-4c06-b249-084fc4eebc4d
+
+	/// Ahorro mensual si se reasignaran o retiraran las Licencias sin uso 28d, con el Precio licencia del parámetro. Supuesto.
+	measure 'Ahorro potencial mensual' = [Licencias sin uso 28d] * [Precio licencia Valor]
+		formatString: #,##0 "€"
+		displayFolder: Coste
+		lineageTag: 382b830b-4553-4271-88e3-125961c4906c
+
+	/// Ahorro potencial mensual x 12. Supuesto basado en el parámetro Precio licencia.
+	measure 'Ahorro potencial anual' = [Ahorro potencial mensual] * 12
+		formatString: #,##0 "€"
+		displayFolder: Coste
+		lineageTag: bfb5558f-4c72-421e-b22a-fea9fea81094
+
+	/// Nombre del usuario respetando la tabla Privacidad: con "Ocultar nombres" (valor por defecto) devuelve "Usuario NNNN" a partir de un código estable.
+	measure 'Nombre mostrado' =
+			VAR _codigo = SELECTEDVALUE ( dim_users[user_code] )
+			VAR _modo = SELECTEDVALUE ( Privacidad[Modo], "Ocultar nombres" )
+			RETURN
+			    IF (
+			        NOT ISBLANK ( _codigo ) && [Licencias] > 0,
+			        IF ( _modo = "Mostrar nombres", SELECTEDVALUE ( dim_users[display_name] ), "Usuario " & RIGHT ( _codigo, 4 ) )
+			    )
+		displayFolder: Textos y formato
+		lineageTag: b307fedb-0114-446a-a8cc-b786fef9b7e1
+
+	/// Texto con los filtros activos de departamento, país, puesto, app y segmento, para los títulos dinámicos.
+	measure 'Texto filtros' =
+			VAR _dep =
+			    IF ( ISFILTERED ( dim_users[department] ),
+			        IF ( HASONEVALUE ( dim_users[department] ), " · " & VALUES ( dim_users[department] ), " · " & COUNTROWS ( VALUES ( dim_users[department] ) ) & " departamentos" ) )
+			VAR _pais =
+			    IF ( ISFILTERED ( dim_users[country] ),
+			        IF ( HASONEVALUE ( dim_users[country] ), " · " & VALUES ( dim_users[country] ), " · " & COUNTROWS ( VALUES ( dim_users[country] ) ) & " países" ) )
+			VAR _puesto =
+			    IF ( ISFILTERED ( dim_users[job_title] ),
+			        IF ( HASONEVALUE ( dim_users[job_title] ), " · " & VALUES ( dim_users[job_title] ), " · " & COUNTROWS ( VALUES ( dim_users[job_title] ) ) & " puestos" ) )
+			VAR _app =
+			    IF ( ISFILTERED ( dim_app[app] ),
+			        IF ( HASONEVALUE ( dim_app[app] ), " · " & VALUES ( dim_app[app] ), " · " & COUNTROWS ( VALUES ( dim_app[app] ) ) & " apps" ) )
+			VAR _segmento =
+			    IF ( ISFILTERED ( copilot_usage_user[segment] ),
+			        IF ( HASONEVALUE ( copilot_usage_user[segment] ), " · " & VALUES ( copilot_usage_user[segment] ), " · varios segmentos" ) )
+			RETURN
+			    _dep & _pais & _puesto & _app & _segmento
+		displayFolder: Textos y formato
+		lineageTag: 61478387-b8a3-4265-8ea4-861b9f4b6fd3
+
+	/// Título dinámico de la página Resumen ejecutivo: fecha de la foto y filtros activos.
+	measure 'Título Resumen ejecutivo' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    IF ( ISBLANK ( _f ), "Sin datos para los filtros seleccionados", "Adopción a " & FORMAT ( _f, "dd/mm/yyyy" ) & [Texto filtros] )
+		displayFolder: Textos y formato
+		lineageTag: 60df6be5-48fa-4da7-a5ab-facf55b6b520
+
+	/// Título dinámico de la página Evolución.
+	measure 'Título Evolución' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    IF ( ISBLANK ( _f ), "Sin datos para los filtros seleccionados", "Evolución hasta el " & FORMAT ( _f, "dd/mm/yyyy" ) & [Texto filtros] )
+		displayFolder: Textos y formato
+		lineageTag: 03630b08-be71-499e-8446-46d508837eb1
+
+	/// Título dinámico de la página Aplicaciones.
+	measure 'Título Aplicaciones' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    IF ( ISBLANK ( _f ), "Sin datos para los filtros seleccionados", "Uso por aplicación a " & FORMAT ( _f, "dd/mm/yyyy" ) & [Texto filtros] )
+		displayFolder: Textos y formato
+		lineageTag: ea3d7d9e-4974-432f-9696-d0cb1b86652b
+
+	/// Título dinámico de la página Licencias y usuarios.
+	measure 'Título Licencias y usuarios' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    IF ( ISBLANK ( _f ), "Sin datos para los filtros seleccionados", "Licencias y usuarios a " & FORMAT ( _f, "dd/mm/yyyy" ) & [Texto filtros] )
+		displayFolder: Textos y formato
+		lineageTag: 91fa14d4-779b-48db-9d15-698ed387c0aa
+
+	/// Título dinámico de la página Análisis libre: dimensión y medida elegidas en los parámetros de campo.
+	measure 'Título Análisis libre' =
+			VAR _f = [Fecha foto]
+			VAR _ordenDim = SELECTEDVALUE ( 'Dimensión de análisis'[Dimensión de análisis Orden] )
+			VAR _ordenMed = SELECTEDVALUE ( 'Medida de análisis'[Medida de análisis Orden] )
+			VAR _dim = SWITCH ( _ordenDim, 0, "departamento", 1, "país", 2, "puesto", 3, "app", "varias dimensiones" )
+			VAR _med = SWITCH ( _ordenMed, 0, "% Adopción", 1, "Activos 28d", 2, "Licencias sin uso 28d", 3, "Coste por usuario activo", "Varias medidas" )
+			RETURN
+			    IF ( ISBLANK ( _f ), "Sin datos para los filtros seleccionados", _med & " por " & _dim & " a " & FORMAT ( _f, "dd/mm/yyyy" ) & [Texto filtros] )
+		displayFolder: Textos y formato
+		lineageTag: 6c559051-128d-4a28-a4d8-ac9b09181e93
+
+	/// Título dinámico de la Ficha de usuario: nombre mostrado (respeta Privacidad) y segmento.
+	measure 'Título Ficha de usuario' =
+			VAR _nombre = [Nombre mostrado]
+			RETURN
+			    IF ( ISBLANK ( _nombre ), "Selecciona un usuario y usa Obtener detalles", _nombre & " · " & [Segmento] & " · foto " & FORMAT ( [Fecha foto], "dd/mm/yyyy" ) )
+		displayFolder: Textos y formato
+		lineageTag: 436112be-a5d9-4520-9b5b-a8e5836459e0
+
+	/// Frase resumen que combina % Adopción, variación a 4 semanas, departamento con menos adopción y ahorro potencial.
+	measure 'Texto resumen' =
+			VAR _f = [Fecha foto]
+			VAR _pct = [% Adopción]
+			VAR _var = [Variación adopción (puntos)]
+			VAR _dep = [Departamento con menos adopción]
+			VAR _sinUso = [Licencias sin uso 28d]
+			VAR _ahorro = [Ahorro potencial mensual]
+			VAR _textoVar =
+			    IF (
+			        ISBLANK ( _var ),
+			        " (todavía no hay foto de hace 4 semanas para comparar)",
+			        " (" & FORMAT ( _var, "+0.0;-0.0;0.0" ) & " puntos en 4 semanas)"
+			    )
+			VAR _textoDep =
+			    IF ( NOT ISBLANK ( _dep ), " El departamento con menos adopción es " & _dep & ".", "" )
+			VAR _textoAhorro =
+			    IF (
+			        _sinUso > 0,
+			        " " & FORMAT ( _sinUso, "#,##0" ) & " licencias sin uso en 28 días suponen un ahorro potencial de " & FORMAT ( _ahorro, "#,##0" ) & " € al mes.",
+			        " Todas las licencias se han usado en los últimos 28 días."
+			    )
+			RETURN
+			    IF (
+			        NOT ISBLANK ( _f ),
+			        "El " & FORMAT ( _pct, "0.0%" ) & " de las licencias de Copilot está activo" & _textoVar & "." & _textoDep & _textoAhorro
+			    )
+		displayFolder: Textos y formato
+		lineageTag: b5bd3aee-07bd-4bab-ad74-e085bfbd5825
+
+	/// Color semáforo de % Adopción: verde >= 60 %, amarillo entre 30 % y 60 %, rojo < 30 %.
+	measure 'Color semáforo adopción' =
+			VAR _pct = [% Adopción]
+			RETURN
+			    SWITCH ( TRUE (), ISBLANK ( _pct ), "#5B677A", _pct >= 0.6, "#4CAF50", _pct >= 0.3, "#F2B705", "#E8462D" )
+		displayFolder: Textos y formato
+		lineageTag: 84d23bbd-c4eb-4115-8dd3-1a6be5ac5407
+
+	/// Color de la variación de adopción a 4 semanas: verde si sube, rojo si baja, gris si no cambia o no hay comparación.
+	measure 'Color variación' =
+			VAR _var = [Variación adopción (puntos)]
+			RETURN
+			    SWITCH ( TRUE (), ISBLANK ( _var ), "#5B677A", _var > 0, "#4CAF50", _var < 0, "#E8462D", "#5B677A" )
+		displayFolder: Textos y formato
+		lineageTag: dc94e9ba-6f92-46df-b616-576186738244
+
+	/// Icono de tendencia de la adopción a 4 semanas: ▲ sube, ▼ baja, ▬ estable o sin comparación.
+	measure 'Icono tendencia' =
+			VAR _var = [Variación adopción (puntos)]
+			RETURN
+			    SWITCH ( TRUE (), ISBLANK ( _var ), "▬", _var > 0, "▲", _var < 0, "▼", "▬" )
+		displayFolder: Textos y formato
+		lineageTag: 9f8a6b0e-c590-45c9-b799-39fed56089e3
+
+	/// Texto de la variación a 4 semanas para las tarjetas: icono y puntos, o aviso si no hay foto para comparar.
+	measure 'Texto variación' =
+			VAR _var = [Variación adopción (puntos)]
+			RETURN
+			    IF ( ISBLANK ( _var ), "▬ sin comparación a 4 sem.", [Icono tendencia] & " " & FORMAT ( _var, "+0.0;-0.0;0.0" ) & " pp en 4 sem." )
+		displayFolder: Textos y formato
+		lineageTag: 02013837-3791-43b4-80ed-1f110467c289
+
+	/// Segmento precedido de un punto para la tabla de usuarios (el color lo da Color segmento).
+	measure 'Segmento con icono' =
+			VAR _segmento = [Segmento]
+			RETURN
+			    IF ( NOT ISBLANK ( _segmento ), "● " & _segmento )
+		displayFolder: Textos y formato
+		lineageTag: a6faa869-99aa-4900-a7a0-1f83205a9f16
+
+	/// Color de cada segmento de usuario para formato condicional.
+	measure 'Color segmento' =
+			SWITCH (
+			    [Segmento],
+			    "Activo semanal", "#4CAF50",
+			    "Activo mensual", "#17A2B8",
+			    "En riesgo", "#F2B705",
+			    "Dormido", "#E8462D",
+			    "Nunca usado", "#5B677A"
+			)
+		displayFolder: Textos y formato
+		lineageTag: 24db1fdf-c8fb-47ed-87db-2a3afa154ea8
+
+	/// Fecha de la foto (día de la carga). Clave de la relación con dim_date.
+	column snapshot_date
+		dataType: dateTime
+		isHidden
+		formatString: dd/mm/yyyy
+		lineageTag: ba973253-d1f8-4ed2-bda7-9674b6a3f00b
+		summarizeBy: none
+		sourceColumn: snapshot_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// Fecha de refresco del informe en Graph (2-3 días antes de la foto).
+	column report_refresh_date
+		dataType: dateTime
+		isHidden
+		formatString: dd/mm/yyyy
+		lineageTag: f6e92928-e2bf-4a5e-854c-b747a7078c7f
+		summarizeBy: none
+		sourceColumn: report_refresh_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// userPrincipalName en minúsculas. Clave de usuario.
+	column upn
+		dataType: string
+		isHidden
+		lineageTag: efff4644-d75d-4468-995c-27c38361d1a4
+		summarizeBy: none
+		sourceColumn: upn
+
+	column display_name
+		dataType: string
+		isHidden
+		lineageTag: 52f9e4b1-e429-4186-b455-daa0414ed299
+		summarizeBy: none
+		sourceColumn: display_name
+
+	/// Última actividad con Copilot en cualquier app. Vacía = nunca lo ha usado.
+	column last_activity_date
+		dataType: dateTime
+		isHidden
+		formatString: dd/mm/yyyy
+		lineageTag: e6d5b9b2-a734-4469-a680-86198c63b02e
+		summarizeBy: none
+		sourceColumn: last_activity_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// Días entre last_activity_date y report_refresh_date. Vacío si nunca lo ha usado.
+	column days_inactive
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 72c619b5-18af-4602-8a9c-03ad9efa7ca2
+		summarizeBy: none
+		sourceColumn: days_inactive
+
+	/// 1 si el usuario tiene actividad en los 28 días anteriores al refresco del informe; 0 si no.
+	column is_active_28d
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: a00b6757-cb5c-47bf-b485-410abd4f1f20
+		summarizeBy: none
+		sourceColumn: is_active_28d
+
+	/// Segmento de actividad del usuario en esa foto: Activo semanal, Activo mensual, En riesgo, Dormido o Nunca usado.
+	column segment
+		dataType: string
+		lineageTag: 9e030c19-87c9-4433-9d5c-8f311d13985b
+		summarizeBy: none
+		sourceColumn: segment
+		sortByColumn: segment_order
+
+	column segment_order
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: f9067feb-e51c-4e1f-9ae6-f6ea539e5509
+		summarizeBy: none
+		sourceColumn: segment_order
+
+	partition copilot_usage_user = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database(SqlEndpoint, Lakehouse),
+				    Datos = Origen{[Schema = "dbo", Item = "copilot_usage_user"]}[Data],
+				    // Días entre la última actividad y el refresco del informe; nulo si nunca lo ha usado
+				    #"Añadidos días sin actividad" = Table.AddColumn(Datos, "days_inactive", each if [last_activity_date] = null then null else Duration.Days(Date.From([report_refresh_date]) - Date.From([last_activity_date])), Int64.Type),
+				    // Activo = actividad en los 28 días anteriores al refresco (misma regla que la medida Activos 28d)
+				    #"Añadido activo 28d" = Table.AddColumn(#"Añadidos días sin actividad", "is_active_28d", each if [days_inactive] <> null and [days_inactive] < 28 then 1 else 0, Int64.Type),
+				    // Segmento por días sin actividad
+				    #"Añadido segmento" = Table.AddColumn(#"Añadido activo 28d", "segment", each
+				        if [days_inactive] = null then "Nunca usado"
+				        else if [days_inactive] < 7 then "Activo semanal"
+				        else if [days_inactive] < 28 then "Activo mensual"
+				        else if [days_inactive] < 60 then "En riesgo"
+				        else "Dormido", type text),
+				    #"Añadido orden de segmento" = Table.AddColumn(#"Añadido segmento", "segment_order", each
+				        if [segment] = "Activo semanal" then 1
+				        else if [segment] = "Activo mensual" then 2
+				        else if [segment] = "En riesgo" then 3
+				        else if [segment] = "Dormido" then 4
+				        else 5, Int64.Type)
+				in
+				    #"Añadido orden de segmento"
+

@@ -1,0 +1,32 @@
+model Model
+	culture: es-ES
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	discourageImplicitMeasures
+	sourceQueryCulture: es-ES
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["copilot_usage_user","copilot_usage_user_app","dim_users","dim_app","dim_date","SqlEndpoint","Lakehouse"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table copilot_usage_user
+ref table copilot_usage_user_app
+ref table dim_users
+ref table dim_app
+ref table dim_date
+ref table 'Precio licencia'
+ref table 'Ventana actividad (días)'
+ref table 'Objetivo adopción'
+ref table 'Dimensión de análisis'
+ref table 'Medida de análisis'
+ref table Privacidad
+ref table 'Etapas embudo'
+ref table 'Comparación temporal'
+ref table 'Comparación ancla'
+
+ref cultureInfo es-ES
+

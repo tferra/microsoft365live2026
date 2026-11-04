@@ -1,0 +1,189 @@
+{
+  "name": "TemaCopilotAdopcion-a718f63a.json",
+  "dataColors": [
+    "#17A2B8",
+    "#F5821F",
+    "#4CAF50",
+    "#F2B705",
+    "#E8462D",
+    "#0E1F3D",
+    "#CADCFC",
+    "#6C8EBF",
+    "#8FD3DE",
+    "#F9B97A"
+  ],
+  "good": "#4CAF50",
+  "neutral": "#F2B705",
+  "bad": "#E8462D",
+  "maximum": "#17A2B8",
+  "center": "#F2B705",
+  "minimum": "#E3F4F7",
+  "null": "#D0D5DD",
+  "foreground": "#0E1F3D",
+  "foregroundNeutralSecondary": "#5B677A",
+  "foregroundNeutralTertiary": "#8A94A6",
+  "background": "#FFFFFF",
+  "backgroundLight": "#EEF2F8",
+  "backgroundNeutral": "#D9E1EC",
+  "tableAccent": "#17A2B8",
+  "textClasses": {
+    "callout": {
+      "fontSize": 28,
+      "fontFace": "Segoe UI Semibold",
+      "color": "#0E1F3D"
+    },
+    "title": {
+      "fontSize": 12,
+      "fontFace": "Segoe UI Semibold",
+      "color": "#0E1F3D"
+    },
+    "header": {
+      "fontSize": 12,
+      "fontFace": "Segoe UI Semibold",
+      "color": "#0E1F3D"
+    },
+    "label": {
+      "fontSize": 10,
+      "fontFace": "Segoe UI",
+      "color": "#0E1F3D"
+    }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "title": [
+          {
+            "show": true,
+            "fontFamily": "Segoe UI",
+            "fontSize": 12,
+            "bold": true,
+            "fontColor": {
+              "solid": {
+                "color": "#0E1F3D"
+              }
+            }
+          }
+        ],
+        "background": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#FFFFFF"
+              }
+            },
+            "transparency": 0
+          }
+        ],
+        "border": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#FFFFFF"
+              }
+            },
+            "radius": 10,
+            "width": 1
+          }
+        ],
+        "dropShadow": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#0E1F3D"
+              }
+            },
+            "position": "Outer",
+            "preset": "Custom",
+            "transparency": 90,
+            "shadowBlur": 12,
+            "shadowDistance": 2,
+            "angle": 90,
+            "shadowSpread": 0
+          }
+        ],
+        "padding": [
+          {
+            "top": 12,
+            "bottom": 12,
+            "left": 12,
+            "right": 12
+          }
+        ],
+        "visualHeader": [
+          {
+            "show": false
+          }
+        ]
+      }
+    },
+    "page": {
+      "*": {
+        "background": [
+          {
+            "color": {
+              "solid": {
+                "color": "#F4F7FC"
+              }
+            },
+            "transparency": 0
+          }
+        ],
+        "outspace": [
+          {
+            "color": {
+              "solid": {
+                "color": "#F4F7FC"
+              }
+            },
+            "transparency": 0
+          }
+        ]
+      }
+    },
+    "tableEx": {
+      "*": {
+        "columnHeaders": [
+          {
+            "autoSizeColumnWidth": true,
+            "columnAdjustment": "growToFit",
+            "fontColor": {
+              "solid": {
+                "color": "#0E1F3D"
+              }
+            },
+            "backColor": {
+              "solid": {
+                "color": "#EEF2F8"
+              }
+            },
+            "fontFamily": "Segoe UI Semibold"
+          }
+        ]
+      }
+    },
+    "pivotTable": {
+      "*": {
+        "columnHeaders": [
+          {
+            "autoSizeColumnWidth": true,
+            "columnAdjustment": "growToFit",
+            "fontColor": {
+              "solid": {
+                "color": "#0E1F3D"
+              }
+            },
+            "backColor": {
+              "solid": {
+                "color": "#EEF2F8"
+              }
+            },
+            "fontFamily": "Segoe UI Semibold"
+          }
+        ]
+      }
+    }
+  }
+}

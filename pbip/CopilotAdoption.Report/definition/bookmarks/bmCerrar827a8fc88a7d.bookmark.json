@@ -1,0 +1,110 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/bookmark/2.1.0/schema.json",
+  "displayName": "Filtros cerrados · Evolución",
+  "name": "bmCerrar827a8fc88a7d",
+  "options": {
+    "targetVisualNames": [
+      "d506bf4b95e3d2659cde",
+      "e9336f4da0f2ee8bec51",
+      "f5d61734ae7b78b266c7",
+      "0a7eed001e6f1ae30444",
+      "13b6a0e80e75190ebc04",
+      "2f437de661cc76c0bbf4",
+      "3f74524b4780eceefbed",
+      "4b9456ed1f91700645c8",
+      "5a53bd05f024c1efe3c8"
+    ],
+    "suppressData": true
+  },
+  "explorationState": {
+    "version": "1.0",
+    "activeSection": "827a8fc88a7d83791a72",
+    "sections": {
+      "827a8fc88a7d83791a72": {
+        "visualContainers": {
+          "d506bf4b95e3d2659cde": {
+            "singleVisual": {
+              "visualType": "shape",
+              "objects": {},
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "e9336f4da0f2ee8bec51": {
+            "singleVisual": {
+              "visualType": "textbox",
+              "objects": {},
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "f5d61734ae7b78b266c7": {
+            "singleVisual": {
+              "visualType": "actionButton",
+              "objects": {},
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "0a7eed001e6f1ae30444": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "objects": {},
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "13b6a0e80e75190ebc04": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "objects": {},
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "2f437de661cc76c0bbf4": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "objects": {},
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "3f74524b4780eceefbed": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "objects": {},
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "4b9456ed1f91700645c8": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "objects": {},
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "5a53bd05f024c1efe3c8": {
+            "singleVisual": {
+              "visualType": "advancedSlicerVisual",
+              "objects": {},
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,153 @@
+/// Hechos: una fila por usuario, app de Microsoft 365 y foto diaria, con la última actividad de Copilot en esa app. Sale del unpivot de las columnas *CopilotLastActivityDate del informe de Graph.
+table copilot_usage_user_app
+	lineageTag: 0b9de8ad-72c7-4c28-8215-2abfa67688d8
+
+	/// Usuarios con actividad de Copilot en la app (o apps filtradas) en los 28 días anteriores al refresco del informe de la foto evaluada.
+	measure 'Usuarios activos app 28d' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    CALCULATE ( DISTINCTCOUNT ( copilot_usage_user_app[upn] ), copilot_usage_user_app[snapshot_date] = _f, copilot_usage_user_app[is_active_28d] = 1 )
+		formatString: #,##0
+		displayFolder: Apps
+		lineageTag: 7b99c53e-cf0d-4ec3-9a40-461560d714f8
+
+	/// Usuarios activos en la app (28d) sobre el total de Licencias de la foto evaluada.
+	measure '% Uso app sobre licencias' = DIVIDE ( [Usuarios activos app 28d], [Licencias] )
+		formatString: 0.0%
+		displayFolder: Apps
+		lineageTag: 9d5b4e41-2946-4eca-a406-95c78c1c1518
+
+	/// Número de apps distintas en las que el usuario (o grupo) ha usado Copilot en los últimos 28 días.
+	measure 'Apps activas por usuario' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    IF (
+			        NOT ISBLANK ( _f ),
+			        CALCULATE ( DISTINCTCOUNT ( copilot_usage_user_app[app] ), copilot_usage_user_app[snapshot_date] = _f, copilot_usage_user_app[is_active_28d] = 1 ) + 0
+			    )
+		formatString: #,##0
+		displayFolder: Apps
+		lineageTag: d25d1dd7-d81c-4536-9c6a-9ded82917aaf
+
+	/// Media de apps con actividad (28d) por cada usuario activo. Mide la amplitud del uso.
+	measure 'Media de apps por usuario activo' =
+			VAR _f = [Fecha foto]
+			VAR _filasActivas =
+			    CALCULATE ( COUNTROWS ( copilot_usage_user_app ), copilot_usage_user_app[snapshot_date] = _f, copilot_usage_user_app[is_active_28d] = 1 )
+			VAR _usuariosActivos =
+			    CALCULATE ( DISTINCTCOUNT ( copilot_usage_user_app[upn] ), copilot_usage_user_app[snapshot_date] = _f, copilot_usage_user_app[is_active_28d] = 1 )
+			RETURN
+			    DIVIDE ( _filasActivas, _usuariosActivos )
+		formatString: #,##0.0
+		displayFolder: Apps
+		lineageTag: d916e05a-2c59-42e8-907a-a29cd8b65b43
+
+	/// App con más usuarios activos (28d) en la foto evaluada. En empate, la de menor orden en dim_app.
+	measure 'App más usada' =
+			VAR _f = [Fecha foto]
+			VAR _tabla =
+			    FILTER (
+			        ADDCOLUMNS (
+			            VALUES ( dim_app[app] ),
+			            "@usuarios",
+			                CALCULATE ( COUNTROWS ( copilot_usage_user_app ), copilot_usage_user_app[snapshot_date] = _f, copilot_usage_user_app[is_active_28d] = 1 ),
+			            "@orden", CALCULATE ( MIN ( dim_app[orden] ) )
+			        ),
+			        [@usuarios] > 0
+			    )
+			VAR _top = TOPN ( 1, _tabla, [@usuarios], DESC, [@orden], ASC )
+			RETURN
+			    MAXX ( _top, dim_app[app] )
+		displayFolder: Apps
+		lineageTag: 757110d9-8c54-47b9-88aa-a6abd7de5dcc
+
+	/// Última fecha de actividad con Copilot en la app, en la foto evaluada.
+	measure 'Última actividad app' =
+			VAR _f = [Fecha foto]
+			RETURN
+			    CALCULATE ( MAX ( copilot_usage_user_app[last_activity_date] ), copilot_usage_user_app[snapshot_date] = _f )
+		formatString: dd/mm/yyyy
+		displayFolder: Apps
+		lineageTag: dde77653-5c29-4ca8-80ec-091d0d447cf5
+
+	/// Icono de estado por app: ● con actividad en 28 días, ○ sin actividad reciente, vacío si no hay licencia.
+	measure 'Icono actividad app' =
+			VAR _f = [Fecha foto]
+			VAR _filas = CALCULATE ( COUNTROWS ( copilot_usage_user_app ), copilot_usage_user_app[snapshot_date] = _f )
+			RETURN
+			    IF ( _filas > 0, IF ( [Usuarios activos app 28d] > 0, "● Activa", "○ Sin uso 28d" ) )
+		displayFolder: Textos y formato
+		lineageTag: 15d7def3-d29b-47d3-a1a4-2374d2957665
+
+	/// Color del icono de actividad por app: verde si hay actividad en 28 días, gris si no.
+	measure 'Color actividad app' = IF ( [Usuarios activos app 28d] > 0, "#4CAF50", "#5B677A" )
+		displayFolder: Textos y formato
+		lineageTag: e49abe3c-6569-494a-bc34-84083f1a9af8
+
+	column snapshot_date
+		dataType: dateTime
+		isHidden
+		formatString: dd/mm/yyyy
+		lineageTag: dd3f38b5-144e-4c37-968d-ff198d879ba0
+		summarizeBy: none
+		sourceColumn: snapshot_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column report_refresh_date
+		dataType: dateTime
+		isHidden
+		formatString: dd/mm/yyyy
+		lineageTag: 7c00ef9e-0c4c-4e73-a8b1-debe90638388
+		summarizeBy: none
+		sourceColumn: report_refresh_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column upn
+		dataType: string
+		isHidden
+		lineageTag: 474dc77a-2e00-48a1-a710-4db245af9241
+		summarizeBy: none
+		sourceColumn: upn
+
+	column app
+		dataType: string
+		isHidden
+		lineageTag: 09059803-824e-46fa-b667-da1411e70d8c
+		summarizeBy: none
+		sourceColumn: app
+
+	column last_activity_date
+		dataType: dateTime
+		isHidden
+		formatString: dd/mm/yyyy
+		lineageTag: 632387e9-ad6c-4015-91dd-1dbe8ac2424f
+		summarizeBy: none
+		sourceColumn: last_activity_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// 1 si hay actividad en la app en los 28 días anteriores al refresco del informe; 0 si no.
+	column is_active_28d
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: dc0bf7d6-4956-445d-9ef3-38fec0623e5f
+		summarizeBy: none
+		sourceColumn: is_active_28d
+
+	partition copilot_usage_user_app = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database(SqlEndpoint, Lakehouse),
+				    Datos = Origen{[Schema = "dbo", Item = "copilot_usage_user_app"]}[Data],
+				    // Activo en la app = actividad en los 28 días anteriores al refresco del informe
+				    #"Añadido activo 28d" = Table.AddColumn(Datos, "is_active_28d", each
+				        if [last_activity_date] <> null and Duration.Days(Date.From([report_refresh_date]) - Date.From([last_activity_date])) < 28 then 1 else 0, Int64.Type)
+				in
+				    #"Añadido activo 28d"
+
+	annotation PBI_ResultType = Table
+

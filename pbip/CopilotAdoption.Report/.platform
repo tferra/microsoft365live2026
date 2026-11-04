@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "CopilotAdoption"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "a2ec7186-f234-44ba-8ec4-93f2448e5d1c"
+  }
+}

@@ -1,0 +1,26 @@
+/// Parámetro what-if: precio supuesto de la licencia de Copilot en €/usuario/mes (0 a 60, 30 por defecto). Es un supuesto para estimar costes, no un dato de facturación.
+table 'Precio licencia'
+	lineageTag: fecb2e75-fbfd-45dd-9fb6-08bf4f2b3066
+
+	/// Precio de licencia seleccionado en €/usuario/mes (30 si no hay selección).
+	measure 'Precio licencia Valor' = SELECTEDVALUE ( 'Precio licencia'[Precio licencia], 30 )
+		formatString: #,##0 "€"
+		displayFolder: Coste
+		lineageTag: 864b267b-e176-4fd9-ba9f-f0b49881d04c
+
+	column 'Precio licencia'
+		dataType: int64
+		formatString: #,##0 "€"
+		lineageTag: 0afd68fc-11b0-4b89-a734-0a7c25d4e56e
+		summarizeBy: none
+		sourceColumn: [Value]
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 0
+				}
+
+	partition 'Precio licencia' = calculated
+		mode: import
+		source = GENERATESERIES ( 0, 60, 1 )
+

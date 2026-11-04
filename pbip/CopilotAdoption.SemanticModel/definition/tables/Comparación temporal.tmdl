@@ -1,0 +1,68 @@
+/// Grupo de cálculo para comparar cualquier medida con la foto de hace 4 semanas (28 días antes): Actual, Hace 4 semanas, Variación y Variación %.
+table 'Comparación temporal'
+	lineageTag: 69e16661-7931-4b2c-acfe-ad7bb3792fda
+
+	calculationGroup
+		precedence: 1
+
+		/// Valor de la medida en la foto evaluada.
+		calculationItem Actual = SELECTEDMEASURE ()
+
+		/// Valor de la medida en la foto de 28 días antes. En blanco si no existe esa foto.
+		calculationItem 'Hace 4 semanas' =
+				IF (
+				    ISFILTERED ( 'Comparación ancla'[Ancla] ),
+				    SELECTEDMEASURE (),
+				    VAR _f = CALCULATE ( MAX ( copilot_usage_user[snapshot_date] ) )
+				    RETURN
+				        CALCULATE ( SELECTEDMEASURE (), REMOVEFILTERS ( dim_date ), dim_date[date] = _f - 28, 'Comparación ancla'[Ancla] = 1 )
+				)
+
+		/// Diferencia absoluta (o en tanto por uno para porcentajes) entre la foto evaluada y la de 28 días antes.
+		calculationItem Variación =
+				IF (
+				    ISFILTERED ( 'Comparación ancla'[Ancla] ),
+				    SELECTEDMEASURE (),
+				    VAR _f = CALCULATE ( MAX ( copilot_usage_user[snapshot_date] ) )
+				    VAR _actual = CALCULATE ( SELECTEDMEASURE (), 'Comparación ancla'[Ancla] = 1 )
+				    VAR _anterior = CALCULATE ( SELECTEDMEASURE (), REMOVEFILTERS ( dim_date ), dim_date[date] = _f - 28, 'Comparación ancla'[Ancla] = 1 )
+				    RETURN
+				        IF ( NOT ISBLANK ( _anterior ) && ISNUMBER ( _actual ), _actual - _anterior )
+				)
+
+			formatStringDefinition =
+					VAR _formato = SELECTEDMEASUREFORMATSTRING ()
+					RETURN
+					    "+" & _formato & ";-" & _formato & ";" & _formato
+
+		/// Variación relativa entre la foto evaluada y la de 28 días antes.
+		calculationItem 'Variación %' =
+				IF (
+				    ISFILTERED ( 'Comparación ancla'[Ancla] ),
+				    SELECTEDMEASURE (),
+				    VAR _f = CALCULATE ( MAX ( copilot_usage_user[snapshot_date] ) )
+				    VAR _actual = CALCULATE ( SELECTEDMEASURE (), 'Comparación ancla'[Ancla] = 1 )
+				    VAR _anterior = CALCULATE ( SELECTEDMEASURE (), REMOVEFILTERS ( dim_date ), dim_date[date] = _f - 28, 'Comparación ancla'[Ancla] = 1 )
+				    RETURN
+				        IF ( ISNUMBER ( _actual ), DIVIDE ( _actual - _anterior, _anterior ) )
+				)
+
+			formatStringDefinition = "+0.0%;-0.0%;0.0%"
+
+	column 'Comparación temporal'
+		dataType: string
+		lineageTag: 29ab25ca-ced1-4311-bca4-81ead4e832c9
+		summarizeBy: none
+		sourceColumn: Name
+		sortByColumn: Ordinal
+
+	column Ordinal
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: aa7626f0-740b-4436-937d-e5ec1ee64094
+		summarizeBy: none
+		sourceColumn: Ordinal
+
+	partition 'Comparación temporal' = calculationGroup
+

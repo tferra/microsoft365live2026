@@ -1,0 +1,21 @@
+/// Parámetro: ventana de actividad en días (7, 14, 28 o 60; 28 por defecto) para la medida Activos ventana.
+table 'Ventana actividad (días)'
+	lineageTag: 5b4a98a1-86b9-4a9f-b445-203af0df618a
+
+	/// Ventana de actividad seleccionada en días (28 si no hay selección).
+	measure 'Ventana actividad (días) Valor' = SELECTEDVALUE ( 'Ventana actividad (días)'[Ventana actividad (días)], 28 )
+		formatString: 0
+		displayFolder: Base
+		lineageTag: f7dd585d-7312-4c2e-a97d-571441621fd3
+
+	column 'Ventana actividad (días)'
+		dataType: int64
+		formatString: 0
+		lineageTag: 82239f7e-83da-469d-808c-c429bf7c8687
+		summarizeBy: none
+		sourceColumn: [Value]
+
+	partition 'Ventana actividad (días)' = calculated
+		mode: import
+		source = { 7, 14, 28, 60 }
+

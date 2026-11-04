@@ -1,0 +1,65 @@
+/// Dimensión de usuarios del tenant (Entra ID): departamento, país y puesto. Incluye usuarios sin licencia de Copilot.
+table dim_users
+	lineageTag: 3f1c2a10-5b7e-4c1d-9a2e-0c1b2d3e4f05
+
+	/// userPrincipalName en minúsculas. Clave.
+	column upn
+		dataType: string
+		isHidden
+		lineageTag: 61df74a7-4530-4126-919a-3b58bda764c5
+		summarizeBy: none
+		sourceColumn: upn
+
+	/// Nombre real del usuario. Oculto: en el informe se usa la medida Nombre mostrado, que respeta la tabla Privacidad.
+	column display_name
+		dataType: string
+		isHidden
+		lineageTag: f8f88701-1a08-4835-8d8e-dd183a580fd6
+		summarizeBy: none
+		sourceColumn: display_name
+
+	/// Código anónimo y estable del usuario (U + número de 4 cifras por orden de upn). Se usa en tablas y en la obtención de detalles.
+	column user_code
+		dataType: string
+		lineageTag: 1e702399-0fa2-4d81-b2cf-7a9ce802ed5a
+		summarizeBy: none
+		sourceColumn: user_code
+
+	/// Departamento o área del usuario ("Sin departamento" si viene vacío en Entra ID).
+	column department
+		dataType: string
+		lineageTag: 3f1c2a10-5b7e-4c1d-9a2e-0c1b2d3e4f06
+		summarizeBy: none
+		sourceColumn: department
+
+	/// País del usuario ("Sin país" si viene vacío en Entra ID).
+	column country
+		dataType: string
+		lineageTag: a6561a42-3a56-4c55-b541-e75a8d49e378
+		dataCategory: Country
+		summarizeBy: none
+		sourceColumn: country
+
+	/// Puesto del usuario en Entra ID.
+	column job_title
+		dataType: string
+		lineageTag: 31dd784e-16cb-418d-9d5a-fdd3a6d922fc
+		summarizeBy: none
+		sourceColumn: job_title
+
+	partition dim_users = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database(SqlEndpoint, Lakehouse),
+				    Datos = Origen{[Schema = "dbo", Item = "dim_users"]}[Data],
+				    // Orden fijo por upn para que el código anónimo sea estable entre refrescos
+				    #"Ordenado por upn" = Table.Sort(Datos, {{"upn", Order.Ascending}}),
+				    #"Añadido índice" = Table.AddIndexColumn(#"Ordenado por upn", "user_index", 1, 1, Int64.Type),
+				    #"Añadido código de usuario" = Table.AddColumn(#"Añadido índice", "user_code", each "U" & Text.PadStart(Text.From([user_index]), 4, "0"), type text),
+				    // Puesto vacío como "Sin puesto" para que se pueda filtrar
+				    #"Reemplazado puesto vacío" = Table.ReplaceValue(#"Añadido código de usuario", null, "Sin puesto", Replacer.ReplaceValue, {"job_title"}),
+				    #"Quitado índice" = Table.RemoveColumns(#"Reemplazado puesto vacío", {"user_index"})
+				in
+				    #"Quitado índice"
+
